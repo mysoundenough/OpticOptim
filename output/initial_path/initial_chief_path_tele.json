@@ -1,0 +1,70 @@
+{
+  "name": "initial_chief_path_telecentric",
+  "object": {
+    "y": 36.8,
+    "z": 0.0,
+    "chief_angle_deg": 15.0
+  },
+  "image": {
+    "y": -84.0,
+    "z": 3500.0,
+    "telecentric": true
+  },
+  "max_incident_deg": 6.958317965297408,
+  "mirrors": [
+    {
+      "id": 1,
+      "reflect_point_y": 500.0,
+      "reflect_point_z": 3000.0,
+      "normal_y": 0.27119648326875506,
+      "normal_z": 0.9625240087720721,
+      "plane_angle_deg": -15.735476979794885,
+      "incident_angle_deg": 6.958317965297408
+    },
+    {
+      "id": 2,
+      "reflect_point_y": -420.0,
+      "reflect_point_z": 800.0,
+      "normal_y": -0.3873896547883102,
+      "normal_z": -0.921916078264716,
+      "plane_angle_deg": 157.20782669932967,
+      "incident_angle_deg": 0.09837835557221243
+    },
+    {
+      "id": 3,
+      "reflect_point_y": 340.0,
+      "reflect_point_z": 2600.0,
+      "normal_y": 0.4040697515128575,
+      "normal_z": 0.9147281759694175,
+      "plane_angle_deg": -23.83284611254013,
+      "incident_angle_deg": 0.9422944562921642
+    },
+    {
+      "id": 4,
+      "reflect_point_y": -260.0,
+      "reflect_point_z": 1300.0,
+      "normal_y": -0.32978463827533144,
+      "normal_z": -0.9440561913136363,
+      "plane_angle_deg": 160.74429556277275,
+      "incident_angle_deg": 5.5194361316046
+    },
+    {
+      "id": 5,
+      "reflect_point_y": 180.0,
+      "reflect_point_z": 3100.0,
+      "normal_y": 0.23541354010023383,
+      "normal_z": 0.9718952953572085,
+      "plane_angle_deg": -13.61600079320919,
+      "incident_angle_deg": 0.120267512408156
+    },
+    {
+      "id": 6,
+      "reflect_point_y": -84.0,
+      "reflect_point_z": 2000.0,
+      "normal_y": -0.11750042131729259,
+      "normal_z": -0.993072832671531,
+      "plane_angle_deg": 173.2521333596021,
+      "incident_angle_deg": 6.74786664039793
+    }
+  ]
+}

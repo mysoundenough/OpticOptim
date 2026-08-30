@@ -136,16 +136,16 @@ def ensure_aspheric_bounds(lens: LensSystem, sag_budget: float = 0.5) -> None:
 #   像质约束留给 DLS 精修阶段。
 STRUCTURE_BALANCED = dict(rms_spot=0.02, na=0.5, angle_inc=0.1, angle_exit=0.1,
                           wd=0.5, obs=300.0, miss=40000.0, tele=0.0, pkg=0.0, mg=50.0,
-                          iz=1.0, mag=8.0)
+                          iz=1.0, mag=8.0, op=200.0, mz=200.0)
 STRUCTURE_NA_FIRST = dict(rms_spot=0.0, na=50.0, angle_inc=0.0, angle_exit=0.0,
                           wd=2.0, obs=40.0, miss=20000.0, tele=0.0, pkg=10.0, mg=30.0,
-                          iz=20.0, mag=50.0)
+                          iz=20.0, mag=50.0, op=200.0, mz=200.0)
 STRUCTURE_FULL = dict(rms_spot=0.0, na=50.0, angle_inc=0.5, angle_exit=0.5,
                       wd=2.0, obs=40.0, miss=20000.0, tele=10.0, pkg=10.0, mg=30.0,
-                      iz=20.0, mag=50.0)
+                      iz=20.0, mag=50.0, op=200.0, mz=200.0)
 STRUCTURE_HARD = dict(rms_spot=0.0, na=500.0, angle_inc=20.0, angle_exit=20.0,
                       wd=50.0, obs=400.0, miss=40000.0, tele=100.0, pkg=20.0, mg=60.0,
-                      iz=100.0, mag=200.0)
+                      iz=100.0, mag=200.0, op=200.0, mz=200.0)
 
 
 def apply_weight_profile(lens: LensSystem, profile: dict) -> None:
@@ -166,6 +166,8 @@ def apply_weight_profile(lens: LensSystem, profile: dict) -> None:
     w.mirror_gap_penalty = profile.get("mg", 0.0)
     w.image_z_penalty = profile.get("iz", 0.0)
     w.magnification_penalty = profile.get("mag", 0.0)
+    w.object_path_penalty = profile.get("op", 0.0)
+    w.mirror_z_penalty = profile.get("mz", 0.0)
 
 
 # ===========================================================================

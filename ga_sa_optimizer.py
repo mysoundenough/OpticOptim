@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import copy
 import numpy as np
-from typing import Optional
+from typing import Optional, Callable
 
 from lens_schema import LensSystem
 from merit_function import merit_scalar
@@ -198,6 +198,7 @@ def ga_sa_optimize(lens: LensSystem,
                    crossover_rate: float = 0.8,
                    mutation_rate: float = 0.3,
                    restart_sigma: Optional[float] = None,
+                   callback: Optional[Callable[[int, "LensSystem", float], None]] = None,
                    verbose: bool = True) -> tuple[LensSystem, list[float]]:
     """
     GA+SA 混合全局优化。
@@ -294,6 +295,12 @@ def ga_sa_optimize(lens: LensSystem,
             best_fitness = fitness[gen_best_idx]
 
         merit_history.append(best_fitness)
+
+        # 回调（实时可视化/过程保存用）：每代最优个体
+        if callback is not None:
+            best_lens_cb = copy.deepcopy(lens)
+            best_lens_cb.array_to_variables(best_x)
+            callback(gen, best_lens_cb, best_fitness)
 
         # 降温
         temperature *= sa_cooling

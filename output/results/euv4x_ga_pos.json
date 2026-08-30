@@ -1,0 +1,496 @@
+{
+  "metadata": {
+    "name": "offaxis_6mirror_euv_4x_collimated",
+    "wavelengths": [
+      0.0135
+    ],
+    "aperture": {
+      "type": "na",
+      "value": 0.33
+    },
+    "fov_deg": [
+      0.0
+    ],
+    "unit": "mm",
+    "ray_mode": "offaxis",
+    "ray_sampling": {
+      "aperture_rings": 2,
+      "radial_rays": 3
+    },
+    "optical_constraints": {
+      "na_objective": 0.08,
+      "na_target": 0.33,
+      "chief_ray_angle_deg": 15.0,
+      "object_height_mm": 36.8,
+      "central_obscuration_ratio": 0.0,
+      "telecentric_objective": false,
+      "telecentric_image_max_deg": 0.5,
+      "image_z_fixed": 3500.0,
+      "magnification_target": 0.25,
+      "rectangular_fov": true,
+      "rect_half_width_mm": 50.0,
+      "fov_grid_n": 2,
+      "rect_half_wx_mm": 6.8,
+      "rect_half_wy_mm": 24.4,
+      "fov_center_x": 36.8,
+      "fov_center_y": 0.0,
+      "fov_pattern": "corners_center",
+      "incident_angle_max_deg": 20.0,
+      "exit_angle_max_deg": 22.0,
+      "working_distance_min": 25.0,
+      "obscuration_margin_mm": 10.0
+    },
+    "spacing_constraints": {
+      "min_center_thickness": 1.0,
+      "min_air_gap": 5.0,
+      "max_total_length": 0.0,
+      "min_mirror_gap": 20.0
+    },
+    "package": {
+      "enabled": false,
+      "shape": "cylinder",
+      "z_min": 0.0,
+      "z_max": 600.0,
+      "r_max": 200.0,
+      "x_half": null,
+      "y_half": null
+    }
+  },
+  "surfaces": [
+    {
+      "surface_id": 0,
+      "type": "object",
+      "curvature": 0.0,
+      "thickness": 600.0,
+      "glass": "air",
+      "semi_aperture": 400.0,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": false,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": false,
+      "bounds": null,
+      "aspheric": null,
+      "aspheric_variable": null
+    },
+    {
+      "surface_id": 1,
+      "type": "aspheric_reflect",
+      "curvature": 0.001424872571866236,
+      "thickness": 298.65223826663464,
+      "glass": "air",
+      "semi_aperture": 633.2911566601945,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": -0.7900213050989432,
+        "high_order_terms": 6,
+        "A4": 3.5249467753950756e-09,
+        "A6": -1.0115654398238167e-13,
+        "A8": -1.7148996823354371e-18,
+        "A10": 1.69657138491044e-21,
+        "A12": -2.047927294830739e-25,
+        "A14": 3.9042727108780193e-31
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 2,
+      "type": "aspheric_reflect",
+      "curvature": 0.004734309280325866,
+      "thickness": 1059.603238393208,
+      "glass": "air",
+      "semi_aperture": 754.4347606276788,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": -0.8042787307137977,
+        "high_order_terms": 6,
+        "A4": 1.6526161078292782e-09,
+        "A6": -9.145895986756996e-14,
+        "A8": 1.1507634866731195e-17,
+        "A10": 2.207052508784702e-21,
+        "A12": -1.135055424245998e-25,
+        "A14": 2.242922449214215e-29
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 3,
+      "type": "aspheric_reflect",
+      "curvature": 0.002123859929543757,
+      "thickness": 447.4056017325978,
+      "glass": "air",
+      "semi_aperture": 383.5158987711088,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": -0.6728096048689256,
+        "high_order_terms": 6,
+        "A4": -3.144433758002835e-09,
+        "A6": 1.367846019359331e-13,
+        "A8": 1.4734460228177085e-17,
+        "A10": 1.3917493111028491e-21,
+        "A12": 2.3131526239436216e-26,
+        "A14": 1.5882028580145836e-29
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 4,
+      "type": "aspheric_reflect",
+      "curvature": -0.0015775890959025035,
+      "thickness": 1769.5616784288563,
+      "glass": "air",
+      "semi_aperture": 416.74271315236433,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": -0.20314508736252834,
+        "high_order_terms": 6,
+        "A4": 1.4925998409096647e-09,
+        "A6": -8.648283761876798e-14,
+        "A8": -4.753456347546309e-17,
+        "A10": -8.440983401722744e-22,
+        "A12": -1.9030522229717217e-25,
+        "A14": -3.9694679943929125e-29
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 5,
+      "type": "aspheric_reflect",
+      "curvature": -0.007668243312206103,
+      "thickness": 428.59607269510366,
+      "glass": "air",
+      "semi_aperture": 419.44847756259475,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": 2.187126661902546,
+        "high_order_terms": 6,
+        "A4": -3.0734282249530406e-09,
+        "A6": -4.330926229558592e-14,
+        "A8": 4.6122758897888463e-17,
+        "A10": 4.2925105973210926e-21,
+        "A12": -1.5310351823758282e-25,
+        "A14": -3.4313772018055264e-29
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 6,
+      "type": "aspheric_reflect",
+      "curvature": 0.004784731945189684,
+      "thickness": 1246.9688166464691,
+      "glass": "air",
+      "semi_aperture": 761.2635229411635,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": true,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": true,
+      "bounds": {
+        "curvature": [
+          -0.03,
+          0.03
+        ],
+        "thickness": [
+          100.0,
+          4000.0
+        ],
+        "decenter_x": null,
+        "decenter_y": null,
+        "k": [
+          -5.0,
+          5.0
+        ],
+        "A4": null,
+        "A6": null,
+        "A8": null,
+        "A10": null,
+        "A12": null,
+        "A14": null,
+        "semi_aperture": [
+          30.0,
+          2000.0
+        ]
+      },
+      "aspheric": {
+        "k": -1.4511567877011584,
+        "high_order_terms": 6,
+        "A4": -2.172743169565807e-09,
+        "A6": -2.0747435819516253e-13,
+        "A8": -2.6636572265434312e-17,
+        "A10": -5.482609972368638e-22,
+        "A12": -4.146487669282296e-25,
+        "A14": 4.305172223833009e-30
+      },
+      "aspheric_variable": {
+        "k": true,
+        "A4": true,
+        "A6": true,
+        "A8": true,
+        "A10": true,
+        "A12": true,
+        "A14": true
+      }
+    },
+    {
+      "surface_id": 7,
+      "type": "image",
+      "curvature": 0.0,
+      "thickness": 0.0,
+      "glass": "air",
+      "semi_aperture": 100.0,
+      "inner_aperture": 0.0,
+      "is_stop": false,
+      "variable": false,
+      "decenter_x": 0.0,
+      "decenter_y": 0.0,
+      "decenter_variable": false,
+      "size_variable": false,
+      "bounds": null,
+      "aspheric": null,
+      "aspheric_variable": null
+    }
+  ],
+  "glass_library": {
+    "air": {
+      "nd": 1.0,
+      "vd": 0.0
+    }
+  },
+  "optimization_config": {
+    "merit_weights": {
+      "rms_spot": 0.02,
+      "distortion": 0.0,
+      "chroma": 0.0,
+      "na_penalty": 0.5,
+      "angle_incident_penalty": 0.1,
+      "angle_exit_penalty": 0.1,
+      "working_distance_penalty": 0.5,
+      "obscuration_penalty": 300.0,
+      "missing_penalty": 40000.0,
+      "lost_ray_penalty_mm": 50.0,
+      "min_thickness_penalty": 0.0,
+      "min_air_gap_penalty": 0.0,
+      "total_length_penalty": 0.0,
+      "telecentricity_penalty": 0.0,
+      "package_penalty": 0.0,
+      "mirror_gap_penalty": 50.0,
+      "object_path_penalty": 200.0,
+      "mirror_z_penalty": 200.0,
+      "image_z_penalty": 1.0,
+      "magnification_penalty": 8.0
+    },
+    "global_search": {
+      "pop_size": 32,
+      "ga_iter": 250,
+      "sa_temp_init": 60.0
+    },
+    "local_dls": {
+      "damp_init": 0.15,
+      "max_iter": 80
+    }
+  }
+}

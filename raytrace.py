@@ -546,12 +546,10 @@ def generate_rect_offaxis_rays(lens: LensSystem) -> tuple[np.ndarray, np.ndarray
     all_pos, all_dir, all_wl, all_fov = [], [], [], []
     for (fx, fy) in fov_pts:
             obj_point = np.array([fx, fy, 0.0])
-            # 主光线方向：远心=+z；非远心=与光轴成 theta，位于物点-光轴平面内指向光轴
-            r_pt = np.hypot(fx, fy)
-            if not tele and r_pt > 1e-9:
-                d_chief = np.array([-np.sin(theta) * fx / r_pt,
-                                    -np.sin(theta) * fy / r_pt,
-                                    np.cos(theta)])
+            # 主光线方向：远心=+z；非远心=统一 15° 倾斜（所有视场点同向，
+            # 物方离轴照明，主光线在 y-z 面内 15° 向下——用户约束的物方主光线角）
+            if not tele:
+                d_chief = np.array([0.0, -np.sin(theta), np.cos(theta)])
             else:
                 d_chief = np.array([0.0, 0.0, 1.0])
             # 正交基（孔径环所在平面）
@@ -575,6 +573,33 @@ def generate_rect_offaxis_rays(lens: LensSystem) -> tuple[np.ndarray, np.ndarray
             np.array(all_dir, dtype=np.float64),
             np.array(all_wl, dtype=np.float64),
             np.array(all_fov, dtype=np.float64))
+
+
+def generate_rect_chief_rays(lens: LensSystem) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    矩形视场仅主光线（每视场点 1 条，共 5 条）。
+
+    主光线 = 各视场点中心光线（非远心：与光轴成 chief_ray_angle_deg，15°）。
+    用于先打通主光线光路（经 6 镜反射进像面），再逐步加孔径光线。
+    """
+    meta = lens.metadata
+    cons = meta.optical_constraints
+    wx = cons.rect_half_wx_mm or cons.rect_half_width_mm or 50.0
+    wy = cons.rect_half_wy_mm or cons.rect_half_width_mm or 50.0
+    cx, cy = cons.fov_center_x, cons.fov_center_y
+    theta = np.deg2rad(cons.chief_ray_angle_deg)
+    pts = [(cx-wx, cy-wy), (cx+wx, cy-wy), (cx+wx, cy+wy), (cx-wx, cy+wy), (cx, cy)]
+    # 统一主光线方向：所有视场点同向（物方离轴照明，主光线在 y-z 面内 15° 向下）
+    # d_chief = (0, -sin15°, cos15°)：斜率统一为负（用户约束）
+    d_chief = np.array([0.0, -np.sin(theta), np.cos(theta)])
+    all_pos, all_dir = [], []
+    for (fx, fy) in pts:
+        all_pos.append(np.array([fx, fy, 0.0]))
+        all_dir.append(d_chief)
+    return (np.array(all_pos, dtype=np.float64),
+            np.array(all_dir, dtype=np.float64),
+            np.full(5, meta.wavelengths[0], dtype=np.float64),
+            np.zeros(5, dtype=np.float64))
 
 
 def generate_meridional_offaxis_rays(lens: LensSystem) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -833,6 +858,7 @@ class TraceResult:
         self.image_xy: np.ndarray = np.array([])          # (M,2) 像面 x,y
         self.wavelengths: np.ndarray = np.array([])
         self.fov_labels: np.ndarray = np.array([])
+        self.is_chief: np.ndarray = np.array([])   # (M,) bool 是否主光线（权重大）
         self.active: np.ndarray = np.array([])             # (M,) bool 有效光线（未遮挡且追迹成功）
         self.obscured: np.ndarray = np.array([])           # (M,) bool 被镜子实体遮挡的光线
         self.obscuration_depth: float = 0.0                # 连续遮挡度量：最大穿入深度比例
@@ -892,7 +918,8 @@ def trace_system(lens: LensSystem,
                  wavelengths: Optional[np.ndarray] = None,
                  fov_labels: Optional[np.ndarray] = None,
                  check_obscuration: bool = True,
-                 ray_mode: Optional[str] = None) -> TraceResult:
+                 ray_mode: Optional[str] = None,
+                 chief_mask: Optional[np.ndarray] = None) -> TraceResult:
     """
     对整个镜头系统执行序列光线追迹。
 
@@ -938,6 +965,8 @@ def trace_system(lens: LensSystem,
                 positions, directions, wavelengths, fov_labels = generate_rect_offaxis_rays(lens)
             else:
                 positions, directions, wavelengths, fov_labels = generate_offaxis_rays(lens)
+        elif ray_mode == "chief" and lens.metadata.optical_constraints.rectangular_fov:
+            positions, directions, wavelengths, fov_labels = generate_rect_chief_rays(lens)
         elif ray_mode == "meridional":
             if chief_angle > 0:
                 positions, directions, wavelengths, fov_labels = generate_meridional_offaxis_rays(lens)
@@ -956,6 +985,8 @@ def trace_system(lens: LensSystem,
     M = positions.shape[0]
     result.wavelengths = wavelengths
     result.fov_labels = fov_labels
+    result.is_chief = (chief_mask.copy() if chief_mask is not None
+                        else np.zeros(M, dtype=bool))
     active = np.ones(M, dtype=bool)
     obscured = np.zeros(M, dtype=bool)
     max_pen = np.zeros(M, dtype=np.float64)  # 每光线最大穿入深度比例

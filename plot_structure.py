@@ -347,6 +347,27 @@ def plot_single_view(lens, segments, foot, surf_z, view, save_path, highlight=No
     plt.close()
 
 
+def plot_quick(lens, save_path, title=None):
+    """快速单张 y-z 布局快照（实时可视化用，快）。"""
+    segments, _ = trace_segments(lens)
+    foot = footprint_regions(lens)
+    surf_z = compute_surface_z(lens.surfaces)
+    fig, ax = plt.subplots(figsize=(13, 5), dpi=150)
+    _draw_mirror_2d(ax, lens, foot, surf_z, "yz")
+    _plot_segments(ax, segments, "yz")
+    ax.axvline(surf_z[-1], color="orange", lw=2)
+    ax.set_title(title or ("Quick layout | " + _title_str(lens)), fontsize=11)
+    ax.set_xlabel("z (mm)")
+    ax.set_ylabel("y (mm)")
+    ax.set_aspect("equal")
+    ax.grid(alpha=0.3)
+    ax.set_xlim(-100, surf_z[-1] + 100)
+    ax.set_ylim(-1200, 1200)
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
 # ===========================================================================
 # 整体结构绘制
 # ===========================================================================

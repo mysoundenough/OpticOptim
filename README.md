@@ -27,6 +27,7 @@ lens_optimizer/
 ├── dls_optimizer.py         # DLS 阻尼最小二乘（Marquardt 阻尼 + 鲁棒差分 + 鞍点逃逸）
 ├── ga_sa_optimizer.py       # GA+SA 混合全局优化（含邻域重启）
 ├── staged_optimizer.py      # ★ 分阶段优化器（GA结构搜索→逐级解锁高阶项→约束验证）
+├── find_reflect_initial.py  # ★ 找反射初始结构（理想反射面主光线路径设计）
 ├── find_offaxis_structure.py # 离轴结构搜索（GA + DLS 两阶段）
 ├── visualization.py         # 可视化模块（光斑/布局/MTF/光线扇/收敛/优化动画）
 ├── examples/
@@ -175,6 +176,78 @@ z(r) = c·r² / [1 + sqrt(1 - (1+k)·c²·r²)] + Σ A_{2m}·r^{2m}   (m=2..7)
    - 残差维度下降：对贡献最大的残差沿其负梯度搜索（评价函数每个维度——光斑/NA/离轴角/遮挡——
      都独立提供一个下降方向，即使全向量梯度≈0，单个维度仍可能有下降方向）
    - 随机扰动逃逸（高斯小扰动，接受更优点）
+
+## 找反射初始结构（find_reflect_initial.py）
+
+理想反射面主光线路径设计——在优化真实镜子之前，先用**中心视场点的中心光线**
+设计一条理想光路（无实体镜子，只有反射平面）：
+
+- 光线按约束从物面出发（主光线入射角固定 15°），依次经 6 个反射平面到达像面
+- 每个反射平面：位置（反射点）+ 放置角度（法向量由反射定律从入射/出射方向确定）
+- 像方远心：M6 反射后主光线平行光轴（+z）
+- 反射面入射角 ≤20°（EUV 镀膜）、镜子 z 全正
+- 可选目标：光线段夹角越大越好（布局更分散）
+
+输出：6 个反射点的位置、法向量、平面角度、入射角
+（`output/initial_path/initial_chief_path_*.json`）+ 路径图。
+
+```bash
+python find_reflect_initial.py            # 默认设计（远心）并打印/绘图
+python find_reflect_initial.py --z1 400 --z6 3000   # 指定反射点 z 范围
+```
+
+```python
+from find_reflect_initial import build_path, print_path, plot_path
+path = build_path(pts_yz, telecentric_image=True)   # 构建路径（含法向量/入射角）
+print_path(path)                                    # 打印反射面设计
+plot_path(path, 'output/initial_path/reflect.png')  # 画图
+```
+
+设计结果可作为真实凹面镜/非球面镜的初始结构（镜面顶点位置 = 反射点，
+镜面放置角度 = 平面角度）。
+
+## 三阶段优化流水线（optimize_pipeline.py）
+
+面向离轴反射 / EUV 物镜的完整优化流程，三个阶段可独立调用：
+
+| 阶段 | 功能 | 说明 |
+|---|---|---|
+| 1 | `ga_structure_search()` | GA 按约束遍历初始结构，找候选起点（默认 24 参数：c+d+半口径+k）×6 镜 |
+| 2 | `dls_find_unobscured()` | **DLS 直接找不遮挡**：遮挡判定含连续穿透深度梯度，DLS 沿梯度把光线"挤出"镜子实体（实测 depth 0.99→0.000，无需 GA） |
+| 3 | `dls_refine()` | 从不遮挡起点解锁全变量（含高阶非球面 A4~A14），逐步引入 NA/角度/像方远心/放大率/RMS 约束（保持不遮挡） |
+
+**可视化与过程保存**：
+- 优化过程中保存各阶段 / 每轮结构 JSON（`save_intermediate`、`realtime`）
+- 实时可视化：GA 每 N 代、DLS 每轮自动保存结构 + 画布局快照（`--realtime --viz-every 10`）
+- 完成后自动调用 `plot_structure.py` 对三个阶段结构出全套图（3D + x/y/z 三视角 + 每镜单独）
+
+```bash
+# 完整流水线（GA → DLS 不遮挡 → DLS 精修 + 可视化）
+python optimize_pipeline.py --input examples/offaxis_6mirror_axisym_demo.json \
+    --outdir output/pipeline_result
+
+# 实时可视化（GA 每 10 代、DLS 每轮保存快照）
+python optimize_pipeline.py --input ... --outdir ... --realtime --viz-every 10
+
+# 只跑某阶段（代码调用）
+from optimize_pipeline import ga_structure_search, dls_find_unobscured, dls_refine
+from lens_schema import LensSystem
+lens = LensSystem.from_json('examples/xxx.json')
+lens = ga_structure_search(lens, pop_size=36, ga_iter=200)      # 阶段1
+lens = dls_find_unobscured(lens)                                 # 阶段2（DLS 找不遮挡）
+lens = dls_refine(lens)                                          # 阶段3（精修）
+```
+
+输出目录结构：
+```
+output/pipeline_result/
+├── ga_structure.json / dls_unobscured.json / final_refined.json   # 三阶段结构
+├── realtime/          # 实时快照（ga_gen_XXXX.json/png, dls_round_XX.json）
+└── figures/           # 完成后可视化
+    ├── ga / unobscured / final
+    │   ├── full/      # 整体 3D + x/y/z 三视角 + 合成
+    │   └── per_mirror/ # 每镜单独 4 视角（24 张）
+```
 
 ## 分阶段优化（staged_optimizer.py）
 

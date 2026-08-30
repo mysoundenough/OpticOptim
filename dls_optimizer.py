@@ -235,6 +235,8 @@ def dls_optimize(lens: LensSystem,
         weights.mirror_gap_penalty,
         weights.image_z_penalty,
         weights.magnification_penalty,
+        weights.object_path_penalty,
+        weights.mirror_z_penalty,
     ], dtype=np.float64)
     W = np.diag(w)
 

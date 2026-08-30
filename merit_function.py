@@ -60,6 +60,8 @@ RESIDUAL_NAMES = [
     "mirror_gap",
     "image_z",
     "magnification",
+    "object_path",
+    "mirror_z",
 ]
 NUM_RESIDUALS = len(RESIDUAL_NAMES)
 
@@ -387,6 +389,60 @@ def compute_magnification_penalty(res: TraceResult, target: float) -> float:
     return float(abs(img_h / obj_h - target))
 
 
+def compute_object_path_penalty(res: TraceResult, lens: LensSystem) -> float:
+    """
+    物光路穿镜惩罚。
+
+    物面发出的光在到达第一面镜子（M1）之前的传播路径上，
+    不能穿过任何其他镜子的实体区域（单片 x/y 包围盒）。
+
+    折返布局中 M2 等镜子 z 常小于 M1，若其实体覆盖物光路横向位置，
+    光线会"先穿过 M2 再反射 M1"——布局不合理（用户指出）。
+    该约束强制物光路干净（M1 是光路上第一个镜面）。
+
+    返回最大违反量（mm，0=物光路干净）。
+    """
+    if len(res.ray_segments) < 2 or len(res.ray_segments[0]) < 2:
+        return 0.0
+    pen = 0.0
+    for seg in res.ray_segments:
+        if len(seg) < 2:
+            continue
+        a = seg[0]
+        b = seg[1]
+        zmin = min(a[2], b[2])
+        zmax = max(a[2], b[2])
+        for i, s in enumerate(lens.surfaces):
+            if not s.is_reflective:
+                continue
+            if i not in res.footprint_z:
+                continue
+            zlo, zhi = res.footprint_z[i]
+            zc = 0.5 * (zlo + zhi)
+            # 该镜面位于物光路区间内
+            if zmin < zc < zmax and abs(b[2] - a[2]) > 1e-9:
+                f = (zc - a[2]) / (b[2] - a[2])
+                if 0 < f < 1:
+                    xc = a[0] + f * (b[0] - a[0])
+                    yc = a[1] + f * (b[1] - a[1])
+                    if i in res.footprint_xy:
+                        xmin2, xmax2, ymin2, ymax2 = res.footprint_xy[i]
+                        if (xmin2 - 2 <= xc <= xmax2 + 2) and (ymin2 - 2 <= yc <= ymax2 + 2):
+                            pen = max(pen, 10.0)
+    return float(pen)
+
+
+def compute_mirror_z_penalty(lens: LensSystem) -> float:
+    """所有镜子顶点 z 必须 > 0（物面 z=0，镜子在正侧；之字形布局）。"""
+    from raytrace import compute_surface_z
+    z = compute_surface_z(lens.surfaces)
+    pen = 0.0
+    for i in range(1, len(lens.surfaces) - 1):  # 镜子（不含物面/像面）
+        if z[i] < 0:
+            pen = max(pen, -z[i])
+    return float(pen)
+
+
 def compute_min_thickness_penalty(lens: LensSystem, min_thickness: float) -> float:
     """
     最小中心厚度惩罚。
@@ -502,12 +558,15 @@ def merit_residuals(lens: LensSystem,
     )
 
     # 结构约束惩罚项（间距约束）
-    # 遮挡残差 = 0.3·遮挡比例(离散) + 0.7·最大穿透深度(连续)
-    #   - 无遮挡时为 0
-    #   - 部分遮挡时比例主导
-    #   - 全遮挡时穿透深度提供连续梯度（GA 能区分"穿入浅"与"穿入深"的个体，
-    #     逐步把光线从镜子实体里"挤"出去——遮挡的满足程度作为一个维度）
-    r[7] = 0.3 * trace_res.obscured_ratio + 0.7 * trace_res.obscuration_depth
+    # 遮挡残差 = 0.5·加权遮挡比例(主光线权重大) + 0.5·最大穿透深度(连续)
+    #   - 加权遮挡比例：主光线被挡权重 3×，边缘 1× → 优化优先保主光线
+    #   - 无遮挡时为 0；全遮挡时穿透深度提供连续梯度
+    if len(trace_res.is_chief) == len(trace_res.obscured):
+        w_arr = np.where(trace_res.is_chief, 3.0, 1.0)
+        weighted_ratio = float(np.sum(w_arr * trace_res.obscured) / max(np.sum(w_arr), 1.0))
+    else:
+        weighted_ratio = trace_res.obscured_ratio
+    r[7] = 0.5 * weighted_ratio + 0.5 * trace_res.obscuration_depth
     # 追迹失败比例：未遮挡但没到像面（防止优化器丢弃光线作弊）
     total_rays = max(len(trace_res.active), 1)
     n_reached = int(np.sum(trace_res.active)) + int(np.sum(trace_res.obscured))
@@ -522,6 +581,8 @@ def merit_residuals(lens: LensSystem,
     r[14] = compute_mirror_gap_penalty(trace_res, spacing.min_mirror_gap)
     r[15] = compute_image_z_penalty(trace_res, constraints.image_z_fixed)
     r[16] = compute_magnification_penalty(trace_res, constraints.magnification_target)
+    r[17] = compute_object_path_penalty(trace_res, lens)
+    r[18] = compute_mirror_z_penalty(lens)
     # 无效光线（全部被遮挡/失败）时给大惩罚，但保留遮挡/缺失比例信息
     # 供全局优化器区分"全遮挡"与"部分遮挡"（否则所有个体 merit 相同，无选择压力）
     if not trace_res.active.any():
@@ -567,6 +628,8 @@ def merit_scalar(lens: LensSystem,
         weights.mirror_gap_penalty,
         weights.image_z_penalty,
         weights.magnification_penalty,
+        weights.object_path_penalty,
+        weights.mirror_z_penalty,
     ], dtype=np.float64)
     return float(np.sum(w * r * r))
 
@@ -599,6 +662,8 @@ def merit_detail(lens: LensSystem,
         weights.mirror_gap_penalty,
         weights.image_z_penalty,
         weights.magnification_penalty,
+        weights.object_path_penalty,
+        weights.mirror_z_penalty,
     ])
 
     detail = {name: {"residual": float(r[i]), "weight": float(w[i]),

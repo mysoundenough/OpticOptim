@@ -432,6 +432,12 @@ class MeritWeights(BaseModel):
     mirror_gap_penalty: float = Field(
         0.0, description="镜子间最小间距违反惩罚权重（径向环带相交时轴向间距不足）"
     )
+    object_path_penalty: float = Field(
+        0.0, description="物光路穿镜惩罚权重：物面→第一镜的传播路径上不能穿过其他镜子实体"
+    )
+    mirror_z_penalty: float = Field(
+        0.0, description="镜子 z 全正惩罚权重：所有镜子顶点 z>0（物面 z=0，镜子应在正侧）"
+    )
     image_z_penalty: float = Field(0.0, description="像面位置偏差惩罚权重（mm）")
     magnification_penalty: float = Field(0.0, description="放大率偏差惩罚权重")
 
