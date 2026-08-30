@@ -315,6 +315,12 @@ def ga_dls_dispersed(n_gen: int = 60,
         if cl < MIN_CLEAR:
             m += 20.0 * (MIN_CLEAR - cl) ** 2
         m -= 0.5 * min(cl, 300.0)
+        # 反射点之间互相距离越远越好
+        pd = points_dist_metrics(p)["min_dist"]
+        m -= 0.8 * min(pd, 1000.0)
+        # M6 反射点离像面近（工作距离小，EUV 晶圆侧）
+        wd = 3500.0 - p["points"][6, 2]
+        m += 0.3 * wd
         if p["metrics"]["z_all_positive"] < 0:
             m += 500.0 * (-p["metrics"]["z_all_positive"]) ** 2
         if p["metrics"]["min_gap"] < MIN_GAP:
@@ -428,6 +434,24 @@ def clearance_metrics(path: dict) -> dict:
         clears.append(dmin)
     return dict(min_clearance=float(min(clears)),
                 per_mirror_clearance=[float(c) for c in clears])
+
+
+def points_dist_metrics(path: dict) -> dict:
+    """
+    6 个反射点之间的两两距离（镜子之间互相远离）。
+
+    返回 dict(min_dist, mean_dist, pairs)
+    min_dist = 最小两两点距（布局分散 = 最小点距尽可能大）
+    """
+    pts = path["points"]  # P1..P6 反射点
+    dists = []
+    for i in range(1, 7):
+        for j in range(i + 1, 7):
+            d = float(np.linalg.norm(pts[i] - pts[j]))
+            dists.append(d)
+    return dict(min_dist=float(min(dists)),
+                mean_dist=float(np.mean(dists)),
+                pairs=[float(d) for d in dists])
 
 
 def print_path(path: dict) -> None:
