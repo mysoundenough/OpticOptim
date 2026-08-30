@@ -28,6 +28,7 @@ lens_optimizer/
 ├── ga_sa_optimizer.py       # GA+SA 混合全局优化（含邻域重启）
 ├── staged_optimizer.py      # ★ 分阶段优化器（GA结构搜索→逐级解锁高阶项→约束验证）
 ├── find_reflect_initial.py  # ★ 找反射初始结构（理想反射面主光线路径设计）
+├── build_axisym.py          # ★ 共轴折返系统构造（主光线反射点→共轴镜面方程，decenter=0）
 ├── find_offaxis_structure.py # 离轴结构搜索（GA + DLS 两阶段）
 ├── visualization.py         # 可视化模块（光斑/布局/MTF/光线扇/收敛/优化动画）
 ├── examples/
@@ -205,6 +206,63 @@ plot_path(path, 'output/initial_path/reflect.png')  # 画图
 
 设计结果可作为真实凹面镜/非球面镜的初始结构（镜面顶点位置 = 反射点，
 镜面放置角度 = 平面角度）。
+
+## 共轴折返系统构造（build_axisym.py）
+
+由**主光线反射点（锚点）** 直接确定 6 镜**共轴（回转对称）折返系统**的
+镜面方程——这是真实 EUV 物镜的形态：
+
+- 6 镜**共轴堆叠**（decenter=0，回转对称），主光线走 **Z 形折返光路**（z 交替）
+- 镜面形态：大凹面镜（M1/M3/M5，R 大）+ 强弯小镜（M2/M6，R 小）
+- **环形孔径**避遮挡（孔径光线打在镜面离轴环带）
+
+### 镜面方程（k=-1 抛物面，锚点处法线严格对齐设计法线）
+
+```python
+ny_raw = sign(nz)·ny/|nz|        # 镜面法线原始 y 分量（取 nz>0 版本）
+c      = -ny_raw / y_anchor      # 曲率：c·y = 法线斜率，法线角精确 = 设计角
+z_v    = z_anchor - c·y²/2       # 顶点 z：镜面精确过锚点（误差 < 1e-3 mm）
+thickness = |z_v 差|             # 全正：折返布局（追迹时反射翻转自动 z 交替）
+```
+
+### 命令行用法
+
+```bash
+# 由理想路径的锚点（反射点）构造共轴镜面 + 保存 LensSystem + 主光线验证
+python build_axisym.py \
+    --path output/initial_path/initial_chief_path_all_seed27.json \
+    --out  examples/offaxis_6mirror_axisym_seed27.json
+```
+
+输出：6 镜曲率/顶点 z 打印 + 主光线验证（6 锚点误差、像面 y、远心）+ JSON 文件。
+
+### Python API
+
+```python
+from build_axisym import build_axisym_mirrors, build_axisym_system, verify_chief_ray
+
+# 1) 锚点 (6,2) (y,z) → 6 镜参数（decenter=0, c, k, z_vertex）
+mirrors = build_axisym_mirrors(anchors_yz, normals=None)   # normals=None 自动重算
+
+# 2) 完整 LensSystem dict（可直接 json 保存）
+sys_dict = build_axisym_system(anchors_yz, normals, name="offaxis_6mirror_axisym")
+
+# 3) 主光线验证：6 锚点全过 + 像面 y=9.2 + 远心
+from lens_schema import LensSystem
+lens = LensSystem.from_json("examples/offaxis_6mirror_axisym_seed27.json")
+v = verify_chief_ray(lens, anchors_yz)   # max_anchor_err / image_y / telecentric_ok
+```
+
+### 已验证布局
+
+| 布局 | M1 | M2 | M3 | M4 | M5 | M6 | 验证 |
+|---|---|---|---|---|---|---|---|
+| seed27 | 凹 827mm | 凸 289mm | 凹 1070mm | 凸 2274mm | 凹 4005mm | 强弯 45mm | 6 锚点 0.000mm，像 y=9.211，远心 OK |
+| seed14 | 凹 1478mm | 强弯 51mm | 凹 1653mm | 凸 2448mm | 凹 2249mm | 强弯 38mm | 6 锚点 0.000mm，像 y=9.199，远心 OK |
+
+> 注意：`find_reflect_initial.py` 的自由离轴布局（每镜独立 decenter）与
+> `build_axisym.py` 的共轴布局（decenter=0）是两条路线：前者镜子位置自由、
+> 遮挡余量大；后者是真实 EUV 物镜形态（共轴 + 环形孔径）。
 
 ## 三阶段优化流水线（optimize_pipeline.py）
 

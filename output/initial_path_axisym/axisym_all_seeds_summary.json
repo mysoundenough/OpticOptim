@@ -1,0 +1,122 @@
+[
+  {
+    "seed": 1,
+    "min_offaxis_y": 245.0,
+    "max_incident": 19.7,
+    "min_fold": 140.5,
+    "clearance": 279.6,
+    "point_dist": 1002.1,
+    "wd": 1328.9,
+    "ok": false
+  },
+  {
+    "seed": 2,
+    "min_offaxis_y": 245.0,
+    "max_incident": 13.1,
+    "min_fold": 153.7,
+    "clearance": 172.2,
+    "point_dist": 945.1,
+    "wd": 1783.0,
+    "ok": false
+  },
+  {
+    "seed": 3,
+    "min_offaxis_y": 245.0,
+    "max_incident": 20.0,
+    "min_fold": 140.0,
+    "clearance": 76.9,
+    "point_dist": 1050.6,
+    "wd": 2745.2,
+    "ok": false
+  },
+  {
+    "seed": 4,
+    "min_offaxis_y": 245.0,
+    "max_incident": 14.4,
+    "min_fold": 151.2,
+    "clearance": 110.0,
+    "point_dist": 739.3,
+    "wd": 1364.1,
+    "ok": false
+  },
+  {
+    "seed": 5,
+    "min_offaxis_y": 245.0,
+    "max_incident": 18.5,
+    "min_fold": 142.9,
+    "clearance": 264.2,
+    "point_dist": 811.1,
+    "wd": 738.5,
+    "ok": false
+  },
+  {
+    "seed": 6,
+    "min_offaxis_y": 245.0,
+    "max_incident": 15.9,
+    "min_fold": 148.1,
+    "clearance": 220.9,
+    "point_dist": 607.2,
+    "wd": 1132.8,
+    "ok": false
+  },
+  {
+    "seed": 7,
+    "min_offaxis_y": 245.0,
+    "max_incident": 19.3,
+    "min_fold": 141.4,
+    "clearance": 87.5,
+    "point_dist": 954.4,
+    "wd": 832.1,
+    "ok": false
+  },
+  {
+    "seed": 8,
+    "min_offaxis_y": 245.0,
+    "max_incident": 18.2,
+    "min_fold": 143.7,
+    "clearance": 81.5,
+    "point_dist": 768.8,
+    "wd": 674.3,
+    "ok": false
+  },
+  {
+    "seed": 9,
+    "min_offaxis_y": 245.0,
+    "max_incident": 14.0,
+    "min_fold": 151.9,
+    "clearance": 167.2,
+    "point_dist": 879.5,
+    "wd": 1642.9,
+    "ok": false
+  },
+  {
+    "seed": 10,
+    "min_offaxis_y": 245.0,
+    "max_incident": 12.6,
+    "min_fold": 154.7,
+    "clearance": 125.8,
+    "point_dist": 614.5,
+    "wd": 743.4,
+    "ok": false
+  },
+  {
+    "seed": 11,
+    "min_offaxis_y": 245.0,
+    "max_incident": 10.4,
+    "min_fold": 159.2,
+    "clearance": 80.5,
+    "point_dist": 736.2,
+    "wd": 727.3,
+    "ok": false
+  },
+  {
+    "seed": 12,
+    "min_offaxis_y": 245.0,
+    "max_incident": 19.3,
+    "min_fold": 141.4,
+    "clearance": 143.1,
+    "point_dist": 571.2,
+    "wd": 1356.8,
+    "ok": false
+  }
+]

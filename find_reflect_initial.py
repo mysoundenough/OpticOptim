@@ -283,6 +283,7 @@ def ga_dls_dispersed(n_gen: int = 60,
                      pop_size: int = 60,
                      seed: int = 7,
                      w_angle: float = 3.0,
+                     min_offaxis: float = 0.0,
                      verbose: bool = True) -> tuple[np.ndarray, dict]:
     """
     分散布局优化（GA 全局搜索 + DLS 局部精修）。
@@ -321,6 +322,13 @@ def ga_dls_dispersed(n_gen: int = 60,
         # M6 反射点离像面近（工作距离小，EUV 晶圆侧）
         wd = 3500.0 - p["points"][6, 2]
         m += 0.3 * wd
+        # 共轴环形孔径：所有反射点离轴足够远（|y| 大），且彼此离轴均匀
+        if min_offaxis > 0:
+            ys = [abs(p["points"][i, 1]) for i in range(1, 7)]
+            r_min = min(ys)
+            if r_min < min_offaxis:
+                m += 30.0 * (min_offaxis - r_min) ** 2
+            m -= 0.6 * min(r_min, 600.0)
         if p["metrics"]["z_all_positive"] < 0:
             m += 500.0 * (-p["metrics"]["z_all_positive"]) ** 2
         if p["metrics"]["min_gap"] < MIN_GAP:

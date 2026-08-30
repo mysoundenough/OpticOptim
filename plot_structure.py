@@ -173,13 +173,15 @@ def _draw_mirror_3d(ax, lens, foot, surf_z, highlight=None, faint_others=True,
         R, TH = np.meshgrid(rr, th)
         Zz = z_v + aspheric_sag(R, s.curvature, asp.k if asp else 0.0,
                                 A4, A6, A8, A10, A12, A14)
+        Xg = s.decenter_x + R * np.cos(TH)   # 全局坐标
+        Yg = s.decenter_y + R * np.sin(TH)
         if highlight is not None and i != highlight:
             if not faint_others:
                 continue
-            ax.plot_surface(R * np.cos(TH), R * np.sin(TH), Zz, color=MIRROR_COLORS[i],
+            ax.plot_surface(Xg, Yg, Zz, color=MIRROR_COLORS[i],
                             alpha=0.08, edgecolor="none", rstride=1, cstride=4)
         else:
-            ax.plot_surface(R * np.cos(TH), R * np.sin(TH), Zz, color=MIRROR_COLORS[i],
+            ax.plot_surface(Xg, Yg, Zz, color=MIRROR_COLORS[i],
                             alpha=0.5, edgecolor="none", rstride=1, cstride=4,
                             label="M%d" % i if highlight is None else None)
     ax.plot([36.8], [0], "go", ms=10, label="fov center")
@@ -206,11 +208,13 @@ def _draw_mirror_2d(ax, lens, foot, surf_z, plane="yz", highlight=None, faint_ot
         alpha_m = 0.85 if (highlight is None or i == highlight) else 0.25
         lw_m = 1.2 if (highlight is None or i == highlight) else 0.8
         if plane in ("yz", "xz"):
-            ax.plot(z_v + sag, rr, color=MIRROR_COLORS[i], lw=lw_m, alpha=alpha_m)
+            # 局部坐标 rr → 全局坐标（yz: y+decenter_y, xz: x+decenter_x）
+            rr_global = rr + (s.decenter_y if plane == "yz" else s.decenter_x)
+            ax.plot(z_v + sag, rr_global, color=MIRROR_COLORS[i], lw=lw_m, alpha=alpha_m)
             if i in foot:
                 rmin, rmax = foot[i]
                 m = (np.abs(rr) >= rmin - 2) & (np.abs(rr) <= rmax + 2)
-                ax.plot(z_v + sag[m], rr[m], color=MIRROR_COLORS[i], lw=4.0 * lw_m, alpha=alpha_m)
+                ax.plot(z_v + sag[m], rr_global[m], color=MIRROR_COLORS[i], lw=4.0 * lw_m, alpha=alpha_m)
         else:  # xy 俯视：画环带内外圆
             if i not in foot:
                 continue
@@ -264,7 +268,7 @@ def _draw_object_fov_xy(ax, lens):
 
 
 def plot_single_view(lens, segments, foot, surf_z, view, save_path, highlight=None,
-                    only_mirror=None, hit_highlight=False):
+                    only_mirror=None, hit_highlight=False, anchors=None):
     """
     绘制单个视角。
 
@@ -294,6 +298,12 @@ def plot_single_view(lens, segments, foot, surf_z, view, save_path, highlight=No
             hp = np.array(hit_pts)
             ax.scatter(hp[:, 0], hp[:, 1], hp[:, 2], c="yellow", s=60, marker="o",
                        edgecolors="k", zorder=10, label="hit points")
+        if anchors is not None:
+            an = np.array(anchors)
+            ax.scatter(an[:, 0], an[:, 1], an[:, 2], c="yellow", s=110, marker="*",
+                       edgecolors="k", zorder=15, label="anchor hits")
+            for k, (ax0, ay0, az0) in enumerate(an):
+                ax.text(ax0, ay0, az0, f" M{k+1}", fontsize=9)
         ax.legend(fontsize=8, loc="upper left")
         ax.set_title("3D | " + _title_str(lens), fontsize=12)
     else:
@@ -324,6 +334,16 @@ def plot_single_view(lens, segments, foot, surf_z, view, save_path, highlight=No
                 ax.plot(hp[:, 2], hp[:, 0], "o", color="yellow", ms=8, mec="k", zorder=10)
             else:
                 ax.plot(hp[:, 0], hp[:, 1], "o", color="yellow", ms=8, mec="k", zorder=10)
+        if anchors is not None:
+            an = np.array(anchors)
+            if plane == "yz":
+                ax.plot(an[:, 2], an[:, 1], "y*", ms=18, mec="k", zorder=15, label="anchor hits")
+                for k, (ax0, ay0, az0) in enumerate(an):
+                    ax.text(az0, ay0, f" M{k+1}", fontsize=9)
+            elif plane == "xz":
+                ax.plot(an[:, 2], an[:, 0], "y*", ms=18, mec="k", zorder=15, label="anchor hits")
+            else:
+                ax.plot(an[:, 0], an[:, 1], "y*", ms=18, mec="k", zorder=15, label="anchor hits")
         ax.axvline(surf_z[-1], color="orange", lw=2.5) if plane != "xy" else None
         ax.set_title(title + " | " + _title_str(lens), fontsize=12)
         ax.set_xlabel(xl)
